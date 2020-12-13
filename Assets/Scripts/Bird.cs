@@ -20,10 +20,17 @@ public class Bird : MonoBehaviour
 
     public GameObject boom;
 
+    private TestMyTrail myTrail;
+
+    //限定每只鸟只能飞一次
+    private bool canMove = true;
+
     private void Awake()
     {
         springJoint2D = GetComponent<SpringJoint2D>();
         rigidBody = GetComponent<Rigidbody2D>();
+        myTrail = GetComponent<TestMyTrail>();
+
     }
 
     // Start is called before the first frame update
@@ -54,23 +61,34 @@ public class Bird : MonoBehaviour
 
     private void OnMouseDown()
     {
+        if (canMove == false)
+        {
+            return;
+        }
         isClick = true;
         rigidBody.isKinematic = true;
     }
 
     private void OnMouseUp()
     {
+        if (canMove == false)
+        {
+            return;
+        }
         isClick = false;
         Invoke("fly", 0.1f);
         rigidBody.isKinematic = false;
         left.enabled = false;
         right.enabled = false;
+        canMove = false;
     }
 
+    //小鸟飞出
     private void fly()
     {
         springJoint2D.enabled = false;
-        Invoke("nextBird", 5);
+        myTrail.startTrail();
+        Invoke("nextBird", 2.5f);
     }
 
     //画弹弓线
@@ -91,5 +109,11 @@ public class Bird : MonoBehaviour
         Destroy(gameObject);
         Instantiate(boom, transform.position, Quaternion.identity);
         GameManager._instance.nextBird();
+    }
+
+    private void OnCollisionEnter2D(Collision2D collision)
+    {
+        //当碰撞时，结束拖影
+        myTrail.ClearTrail();
     }
 }
